@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,7 +27,7 @@ public class MainActivityFragment extends Fragment {
             "Sun - Sunny - 80/68"
     };
 
-    List<String> weekForecast = new ArrayList<String>(Arrays.asList(forecastArray));
+    List<String> weekForecast = new ArrayList<>(Arrays.asList(forecastArray));
     public MainActivityFragment() {
     }
 
@@ -35,7 +36,7 @@ public class MainActivityFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         mArrayAdapter =
-                new ArrayAdapter<String>(
+                new ArrayAdapter<>(
                         // The current context (This fragment's parent activity)
                         getActivity(),
                         // ID of list item layout
@@ -44,7 +45,8 @@ public class MainActivityFragment extends Fragment {
                         R.id.list_item_forecast_textview,
                         // Forecast data
                         weekForecast);
-
+        ListView listView = (ListView) rootView.findViewById(R.id.fragment_main_listview_forecast);
+        listView.setAdapter(mArrayAdapter);
         return rootView;
     }
 }
