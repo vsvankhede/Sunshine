@@ -2,8 +2,11 @@ package com.udacity.vsvankhede.sunsine.sunsine;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 
 public class MainActivity extends AppCompatActivity {
 
