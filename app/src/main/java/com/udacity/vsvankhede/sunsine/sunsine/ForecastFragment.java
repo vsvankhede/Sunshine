@@ -3,6 +3,7 @@ package com.udacity.vsvankhede.sunsine.sunsine;
 import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.text.format.Time;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -13,13 +14,17 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -89,18 +94,94 @@ public class ForecastFragment extends Fragment {
         return super.onOptionsItemSelected(item);
     }
 
+    private String getReadableDateString(long time) {
+        SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE MMM DD");
+        return shortenedDateFormat.format(time);
+    }
 
-    public class FetchWeatherTask extends AsyncTask {
+    /**
+     * Prepare the weather high/lows for presentation.
+     */
+    private String formatHighLows(double high, double low) {
+        long roundedHigh = Math.round(high);
+        long roundedLow = Math.round(low);
+
+        String highLowStr = roundedHigh +"/"+ roundedLow;
+        return highLowStr;
+    }
+
+    /**
+     * Take the String representing complete forecast in JSON format and
+     * pull out data we need to construct the Strings needed for the wireframes.
+     *
+     * Fortunately parsing is easy: constructor takes the JSON string  and converts it
+     * into an Object hierarchy for us.
+     */
+    private String[] getWeatherDataFromJson(String forecastJsonStr, int numDays)
+            throws JSONException{
+
+        // This are the name of the JSON objects that we need to be extracted.
+        final String OWN_LIST = "list";
+        final String OWM_WEATHER = "weather";
+        final String OWM_TEMPERATURE = "temp";
+        final String OWM_MAX = "max";
+        final String OWM_MIN = "min";
+        final String OWM_DESCRIPTION = "main";
+
+        JSONObject forecastJson = new JSONObject(forecastJsonStr);
+        JSONArray weatherArray = forecastJson.getJSONArray(OWN_LIST);
+
+        Time dayTime = new Time();
+        dayTime.setToNow();
+
+        // We start at the day returned by local time. Otherwise this is a mess.
+        int julianStartDay = Time.getJulianDay(System.currentTimeMillis(), dayTime.gmtoff);
+
+        // Now we work exclusively in UTC.
+        dayTime = new Time();
+
+        String[] resultStrs = new String[numDays];
+        for (int i = 0; i < weatherArray.length(); i++) {
+            // For now, using the format "Day, description, hi/low"
+            String day;
+            String description;
+            String highAndLow;
+
+            long dateTime;
+            // Get JSON object representing the day
+            JSONObject dayForecast = weatherArray.getJSONObject(i);
+            dateTime = dayTime.setJulianDay(julianStartDay + i);
+            day = getReadableDateString(dateTime);
+
+            JSONObject weatherObject = dayForecast.getJSONArray(OWM_WEATHER).getJSONObject(0);
+            description = weatherObject.getString(OWM_DESCRIPTION);
+
+            JSONObject temperatureObject = dayForecast.getJSONObject(OWM_TEMPERATURE);
+            double high = temperatureObject.getDouble(OWM_MAX);
+            double low = temperatureObject.getDouble(OWM_MIN);
+
+            highAndLow = formatHighLows(high, low);
+            resultStrs[i] = day + " - " + description + "-" + highAndLow;
+        }
+
+        for (String s : resultStrs) {
+            Log.v(TAG, "Forecast entry:" +s);
+        }
+
+        return resultStrs;
+    }
+
+    public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
         private final String TAG = FetchWeatherTask.class.getSimpleName();
         @Override
-        protected Object doInBackground(Object[] objects) {
+        protected String[] doInBackground(String... strings) {
             // These two declared out side try/catch
             // so that they can be closed in the finally block.
             HttpURLConnection urlConnection = null;
             BufferedReader reader = null;
 
             String forecastJsonStr = null;
-
+            String[] resultStr = null;
             try {
 
                 // Construct the URL for the Openwhether query.
@@ -133,6 +214,14 @@ public class ForecastFragment extends Fragment {
                     return null;
                 }
                 forecastJsonStr = buffer.toString();
+                Log.v(TAG, forecastJsonStr);
+
+                try {
+                    resultStr = getWeatherDataFromJson(forecastJsonStr, 7);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return resultStr;
             } catch (IOException e) {
                 Log.e(TAG, "Error ", e);
                 // If the code didn't successfully get the weather data, there's no point in attempting
@@ -150,7 +239,6 @@ public class ForecastFragment extends Fragment {
                     }
                 }
             }
-            return null;
         }
     }
 }
