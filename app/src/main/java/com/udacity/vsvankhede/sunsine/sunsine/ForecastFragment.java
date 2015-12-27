@@ -25,9 +25,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -35,19 +32,9 @@ import java.util.List;
 public class ForecastFragment extends Fragment {
     private static final String TAG = "ForecastFragment";
 
-    ArrayAdapter<String> mArrayAdapter;
+    public ArrayAdapter<String> mArrayAdapter;
+    public ListView listView;
     String appID = "d03415914e58fbab350537d8bd0a9a36";
-    String[] forecastArray = {
-            "Today - Sunny - 88/63",
-            "Tomorrow - Foggy - 70/40",
-            "Weds - Cloudy - 72/63",
-            "Thurs - Asteroids - 75/65",
-            "Fri - Heavy Rain - 65/56",
-            "Sat - HELP TRAPPED IN WEATHERSTATION - 60/51",
-            "Sun - Sunny - 80/68"
-    };
-
-    List<String> weekForecast = new ArrayList<>(Arrays.asList(forecastArray));
 
     public ForecastFragment() {
     }
@@ -62,18 +49,7 @@ public class ForecastFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-        mArrayAdapter =
-                new ArrayAdapter<>(
-                        // The current context (This fragment's parent activity)
-                        getActivity(),
-                        // ID of list item layout
-                        R.layout.list_item_forecast,
-                        // ID of textview to populate
-                        R.id.list_item_forecast_textview,
-                        // Forecast data
-                        weekForecast);
-        ListView listView = (ListView) rootView.findViewById(R.id.fragment_main_listview_forecast);
-        listView.setAdapter(mArrayAdapter);
+        listView = (ListView) rootView.findViewById(R.id.fragment_main_listview_forecast);
 
         return rootView;
     }
@@ -164,10 +140,6 @@ public class ForecastFragment extends Fragment {
             resultStrs[i] = day + " - " + description + "-" + highAndLow;
         }
 
-        for (String s : resultStrs) {
-            Log.v(TAG, "Forecast entry:" +s);
-        }
-
         return resultStrs;
     }
 
@@ -214,7 +186,6 @@ public class ForecastFragment extends Fragment {
                     return null;
                 }
                 forecastJsonStr = buffer.toString();
-                Log.v(TAG, forecastJsonStr);
 
                 try {
                     resultStr = getWeatherDataFromJson(forecastJsonStr, 7);
@@ -239,6 +210,19 @@ public class ForecastFragment extends Fragment {
                     }
                 }
             }
+        }
+
+        @Override
+        protected void onPostExecute(String[] strings) {
+            super.onPostExecute(strings);
+
+            mArrayAdapter = new ArrayAdapter<>(
+                    getActivity(),
+                    R.layout.list_item_forecast,
+                    R.id.list_item_forecast_textview,
+                    strings);
+
+            listView.setAdapter(mArrayAdapter);
         }
     }
 }
