@@ -1,0 +1,14 @@
+<resources>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Strings related to Settings -->
+
+    <!-- Label for the location preference -->
+    <string name="pref_location_label">Location</string>
+
+    <!-- Key name for storing location in SharedPreference -->
+    <string name="pref_location_key" translatable="false">location</string>
+
+    <!-- Default postal code for location preference -->
+    <string name="pref_location_default" translatable="false">94043</string>
+   </resources>

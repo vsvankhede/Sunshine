@@ -12,9 +12,14 @@ android {
         versionName "1.0"
     }
     buildTypes {
+        debug {
+            minifyEnabled true
+            buildConfigField "String", "OPEN_WEATHER_MAP_API_KEY", "\"${OPEN_WEATHER_MAP_API_KEY}\""
+        }
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            buildConfigField "String", "OPEN_WEATHER_MAP_API_KEY", "\"${OPEN_WEATHER_MAP_API_KEY}\""
         }
     }
 }
@@ -22,4 +27,5 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:22.2.0'
+    compile 'com.android.support:support-v4:22.2.0'
 }
