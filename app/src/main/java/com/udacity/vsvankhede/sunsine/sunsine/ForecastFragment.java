@@ -1,5 +1,6 @@
 package com.udacity.vsvankhede.sunsine.sunsine;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -11,8 +12,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -25,6 +28,11 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static android.widget.Toast.LENGTH_SHORT;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -35,6 +43,17 @@ public class ForecastFragment extends Fragment {
     public ArrayAdapter<String> mArrayAdapter;
     public ListView listView;
     String appID = "d03415914e58fbab350537d8bd0a9a36";
+    String[] forecastArray = {
+            "Today - Sunny - 88/63",
+            "Tomorrow - Foggy - 70/40",
+            "Weds - Cloudy - 72/63",
+            "Thurs - Asteroids - 75/65",
+            "Fri - Heavy Rain - 65/56",
+            "Sat - HELP TRAPPED IN WEATHERSTATION - 60/51",
+            "Sun - Sunny - 80/68"
+    };
+
+    List<String> weekForecast = new ArrayList<>(Arrays.asList(forecastArray));
 
     public ForecastFragment() {
     }
@@ -49,8 +68,29 @@ public class ForecastFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-        listView = (ListView) rootView.findViewById(R.id.fragment_main_listview_forecast);
+        mArrayAdapter =
+                new ArrayAdapter<>(
+                        // The current context (This fragment's parent activity)
+                        getActivity(),
+                        // ID of list item layout
+                        R.layout.list_item_forecast,
+                        // ID of textview to populate
+                        R.id.list_item_forecast_textview,
+                        // Forecast data
+                        weekForecast);
 
+        listView = (ListView) rootView.findViewById(R.id.fragment_main_listview_forecast);
+        listView.setAdapter(mArrayAdapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                String forecast = mArrayAdapter.getItem(position);
+                /*Toast.makeText(getActivity(), forecast, LENGTH_SHORT).show();*/
+                Intent intent = new Intent(getActivity(), DetailActivity.class);
+                intent.putExtra(Intent.EXTRA_TEXT,forecast);
+                startActivity(intent);
+            }
+        });
         return rootView;
     }
 
@@ -213,16 +253,13 @@ public class ForecastFragment extends Fragment {
         }
 
         @Override
-        protected void onPostExecute(String[] strings) {
-            super.onPostExecute(strings);
-
-            mArrayAdapter = new ArrayAdapter<>(
-                    getActivity(),
-                    R.layout.list_item_forecast,
-                    R.id.list_item_forecast_textview,
-                    strings);
-
-            listView.setAdapter(mArrayAdapter);
+        protected void onPostExecute(String[] results) {
+            if (results != null) {
+                mArrayAdapter.clear();
+                for (String dayForecastStr : results) {
+                    mArrayAdapter.add(dayForecastStr);
+                }
+            }
         }
     }
 }

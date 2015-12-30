@@ -1,6 +1,7 @@
 <resources>
-    <string name="app_name">Sun Sine</string>
+    <string name="app_name">SunShine</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="action_refresh" translatable = "false">Refresh</string>
+    <string name="title_activity_detail">DetailActivity</string>
 </resources>
